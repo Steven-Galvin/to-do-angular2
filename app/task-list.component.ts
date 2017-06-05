@@ -5,8 +5,16 @@ import { Task } from './task.model';
 @Component({
   selector: 'task-list',
   template: `
+  <select (change)="onChange($event.target.value)">
+    <option value="allTasks">All Tasks</option>
+    <option value="completedTasks">Completed Tasks</option>
+    <option value="incompleteTasks" selected="selected">Incomplete Tasks</option>
+  </select>
   <ul>
-    <li *ngFor="let currentTask of childTaskList">{{currentTask.description}} <button (click)="editButtonHasBeenClicked(currentTask)">Edit Task</button></li>
+    <li *ngFor="let currentTask of childTaskList | completeness:filterByCompleteness">{{currentTask.description}} {{currentTask.priority}}
+    <input *ngIf="currentTask.done === true" type="checkbox" checked (click)="toggleDone(currentTask, false)"/>
+    <input *ngIf="currentTask.done === false" type="checkbox" (click)="toggleDone(currentTask, true)"/>
+    <button (click)="editButtonHasBeenClicked(currentTask)">Edit Task</button></li>
   </ul>
   `
 })
@@ -14,6 +22,16 @@ import { Task } from './task.model';
 export class TaskListComponent {
   @Input() childTaskList: Task[];
   @Output() clickSender = new EventEmitter();
+
+  filterByCompleteness: string = "incompleteTasks";
+
+  toggleDone(clickedTask: Task, setCompleteness: boolean) {
+    clickedTask.done = setCompleteness;
+  }
+
+  onChange(optionFromMenu) {
+    this.filterByCompleteness = optionFromMenu;
+  }
 
   editButtonHasBeenClicked(taskToEdit: Task) {
     this.clickSender.emit(taskToEdit);
